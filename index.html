@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UFW Command Generator</title>
+    <style>
+        /* Clean, Dark-Mode Inspired Styling */
+        :root {
+            --primary: #007bff;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --code-bg: #2d2d2d;
+            --code-text: #50fa7b;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 600px;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h2 { text-align: center; margin-bottom: 25px; color: #444; }
+
+        .form-group { margin-bottom: 20px; }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        select, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        /* Tabs for switching modes */
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: bold;
+            color: #888;
+        }
+
+        .tab.active {
+            border-bottom: 3px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .hidden { display: none; }
+
+        /* Output Box Styling */
+        .result-area {
+            margin-top: 30px;
+            background: var(--code-bg);
+            padding: 20px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .command-output {
+            color: var(--code-text);
+            font-family: monospace;
+            font-size: 1.1em;
+            word-break: break-all;
+        }
+
+        .copy-btn {
+            display: block;
+            width: 100%;
+            margin-top: 15px;
+            padding: 12px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .copy-btn:hover { background-color: #0056b3; }
+
+        .note {
+            font-size: 0.85em;
+            margin-top: 15px;
+            background: #fff3cd;
+            color: #856404;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #ffeeba;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>UFW Firewall Generator</h2>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchMode('port')">Port Management</div>
+        <div class="tab" onclick="switchMode('ip')">IP Address Management</div>
+    </div>
+
+    <div class="form-group">
+        <label>Action</label>
+        <select id="action" onchange="generate()">
+            <option value="allow">Allow (Whitelist)</option>
+            <option value="deny">Deny (Blacklist)</option>
+            <option value="delete allow">Delete 'Allow' Rule</option>
+            <option value="delete deny">Delete 'Deny' Rule</option>
+        </select>
+    </div>
+
+    <div id="port-section">
+        <div class="form-group">
+            <label>Port Number or Service Name</label>
+            <input type="text" id="portInput" placeholder="e.g. 80, 443, 22, ssh" oninput="generate()">
+        </div>
+        <div class="form-group">
+            <label>Protocol</label>
+            <select id="protocol" onchange="generate()">
+                <option value="">TCP & UDP (Both)</option>
+                <option value="/tcp">TCP Only</option>
+                <option value="/udp">UDP Only</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="ip-section" class="hidden">
+        <div class="form-group">
+            <label>IP Address or Subnet</label>
+            <input type="text" id="ipInput" placeholder="e.g. 192.168.1.5 or 10.0.0.0/24" oninput="generate()">
+        </div>
+        
+        <div class="form-group">
+            <label>Specific Port? (Optional)</label>
+            <input type="text" id="ipPortInput" placeholder="Leave empty for ALL ports" oninput="generate()">
+            <small style="color:#666;">If filled, the IP will only have access to this specific port.</small>
+        </div>
+    </div>
+
+    <div class="result-area">
+        <div class="command-output" id="output">sudo ufw allow 80</div>
+    </div>
+    <button class="copy-btn" onclick="copyText()">Copy Command</button>
+
+    <div class="note">
+        <strong>Tip:</strong> Always run <code>sudo ufw status</code> to check your active rules.
+    </div>
+</div>
+
+<script>
+    let currentMode = 'port';
+
+    function switchMode(mode) {
+        currentMode = mode;
+        
+        // Update UI Tabs
+        const tabs = document.querySelectorAll('.tab');
+        tabs[0].classList.toggle('active', mode === 'port');
+        tabs[1].classList.toggle('active', mode === 'ip');
+
+        // Show/Hide Sections
+        document.getElementById('port-section').classList.toggle('hidden', mode !== 'port');
+        document.getElementById('ip-section').classList.toggle('hidden', mode !== 'ip');
+
+        generate(); // Update output immediately
+    }
+
+    function generate() {
+        const action = document.getElementById('action').value;
+        const output = document.getElementById('output');
+        let command = "sudo ufw ";
+
+        if (currentMode === 'port') {
+            // --- PORT MODE LOGIC ---
+            let port = document.getElementById('portInput').value.trim();
+            const protocol = document.getElementById('protocol').value;
+            
+            if (!port) port = "{port}"; 
+
+            // Syntax: sudo ufw allow 80/tcp
+            command += `${action} ${port}${protocol}`;
+
+        } else {
+            // --- IP MODE LOGIC ---
+            let ip = document.getElementById('ipInput').value.trim();
+            let specificPort = document.getElementById('ipPortInput').value.trim();
+
+            if (!ip) ip = "{ip_address}";
+
+            if (specificPort) {
+                // Syntax: sudo ufw allow from 1.2.3.4 to any port 22
+                command += `${action} from ${ip} to any port ${specificPort}`;
+            } else {
+                // Syntax: sudo ufw allow from 1.2.3.4
+                command += `${action} from ${ip}`;
+            }
+        }
+
+        output.textContent = command;
+    }
+
+    function copyText() {
+        const text = document.getElementById('output').textContent;
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.querySelector('.copy-btn');
+            btn.textContent = "Copied!";
+            btn.style.background = "#28a745"; 
+            setTimeout(() => {
+                btn.textContent = "Copy Command";
+                btn.style.background = ""; 
+            }, 2000);
+        });
+    }
+
+    // Initialize
+    generate();
+</script>
+
+</body>
+</html>
