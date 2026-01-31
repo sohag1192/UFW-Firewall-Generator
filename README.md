@@ -36,6 +36,29 @@ The README highlights multiple iterations of the generator, each with its own in
 [UFW Firewall Generator Web Interface](https://sohag1192.github.io/UFW-Firewall-Generator)
 
 ---
+## 🎬 Live Generator Versions / লাইভ জেনারেটর ভার্সনসমূহ
+
+| Version (EN) | বিবরণ (BN) | Link |
+| --- | --- | --- |
+| **Standard (`ufw.html`)** | সাধারণ এবং সহজ ইন্টারফেস | [View](https://sohag1192.github.io/UFW-Firewall-Generator/ufw.html) |
+| **Bulk (`ufw-bulk.html`)** | একসাথে একাধিক পোর্ট সেটআপের জন্য | [View](https://sohag1192.github.io/UFW-Firewall-Generator/ufw-bulk.html) |
+| **Shell (`ufw_shell.html`)** | টার্মিনাল বা স্ক্রিপ্ট ব্যবহারের জন্য | [View](https://sohag1192.github.io/UFW-Firewall-Generator/ufw_shell.html) |
+| **Pro (`ufw_pro.html`)** | অ্যাডভান্সড বা উন্নত কনফিগারেশন | [View](https://sohag1192.github.io/UFW-Firewall-Generator/ufw_pro.html) |
+
+---
+
+## ⚠️ Important Note / গুরুত্বপূর্ণ নোট
+
+**English:**
+
+> Always verify that **Port 22 (SSH)** is allowed before enabling the firewall to prevent being locked out of your server.
+
+**বাংলা:**
+
+> ফায়ারওয়াল চালু করার আগে অবশ্যই নিশ্চিত করুন যে **Port 22 (SSH)** এলাউ (Allow) করা আছে, অন্যথায় আপনি আপনার সার্ভারে প্রবেশাধিকার হারাতে পারেন।
+
+---
+
 
 ## 🛠️ What It Does
 - Provides a **web-based interface** to generate UFW commands.  
