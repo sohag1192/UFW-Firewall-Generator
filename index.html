@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UFW Command Generator Pro</title>
+    <title>UFW Command Generator Ultimate</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -33,7 +33,7 @@
         .dashboard {
             background: var(--card-bg);
             width: 100%;
-            max-width: 650px;
+            max-width: 700px;
             border-radius: 16px;
             border: 1px solid var(--border);
             box-shadow: 0 10px 40px rgba(0,0,0,0.5);
@@ -82,7 +82,7 @@
         .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
 
         /* Content Area */
-        .content { padding: 30px; }
+        .content { padding: 30px; min-height: 350px; }
         .form-group { margin-bottom: 20px; }
         
         label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: var(--text-muted); }
@@ -136,6 +136,33 @@
         }
         .prompt { color: #3b82f6; margin-right: 8px; user-select: none; }
 
+        /* INFO / GUIDE SECTION STYLING */
+        .info-box {
+            line-height: 1.6;
+            color: #d1d5db;
+        }
+        .info-box h3 { color: var(--primary); margin-top: 0; }
+        .info-box h4 { margin-bottom: 5px; color: #fff; margin-top: 20px; }
+        .info-box code { 
+            background: rgba(0,0,0,0.3); 
+            padding: 2px 6px; 
+            border-radius: 4px; 
+            font-family: 'JetBrains Mono', monospace; 
+            color: #fbbf24;
+        }
+        .cheat-sheet {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .cheat-item {
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
         /* Copy Button */
         .copy-btn {
             background: var(--primary);
@@ -166,7 +193,6 @@
         .footer a { color: var(--primary); text-decoration: none; }
         .footer a:hover { text-decoration: underline; }
 
-        /* Hit Counter Placeholder Styling */
         .hit-counter-box {
             margin-top: 15px;
             display: inline-flex;
@@ -186,27 +212,28 @@
 
 <div class="dashboard">
     <div class="header">
-        <h2>UFW Generator <span style="font-size:0.6em; opacity:0.7; border:1px solid var(--primary); padding:2px 6px; border-radius:4px;">PRO</span></h2>
+        <h2>UFW Generator <span style="font-size:0.6em; opacity:0.7; border:1px solid var(--primary); padding:2px 6px; border-radius:4px;">ULTIMATE</span></h2>
         <div class="session-counter" id="sessionCount">Generations: 0</div>
     </div>
 
     <div class="tabs">
         <div class="tab active" onclick="switchMode('port')">Port Rules</div>
-        <div class="tab" onclick="switchMode('ip')">IP & Subnet Rules</div>
+        <div class="tab" onclick="switchMode('ip')">IP & Subnet</div>
+        <div class="tab" onclick="switchMode('info')">Guide & Info</div>
     </div>
 
     <div class="content">
-        <div class="form-group">
-            <label>Action</label>
-            <select id="action" onchange="generate()">
-                <option value="allow">Allow (Green / Open)</option>
-                <option value="deny">Deny (Red / Block)</option>
-                <option value="delete allow">Delete Allow Rule</option>
-                <option value="delete deny">Delete Deny Rule</option>
-            </select>
-        </div>
-
+        
         <div id="port-section">
+            <div class="form-group">
+                <label>Action</label>
+                <select id="action-port" onchange="generate()">
+                    <option value="allow">Allow (Open Port)</option>
+                    <option value="deny">Deny (Block Port)</option>
+                    <option value="delete allow">Delete 'Allow' Rule</option>
+                    <option value="delete deny">Delete 'Deny' Rule</option>
+                </select>
+            </div>
             <div class="form-group">
                 <label>Port (e.g. 80, 443) or Service (e.g. ssh, apache)</label>
                 <input type="text" id="portInput" placeholder="22" onkeyup="generate()">
@@ -219,9 +246,29 @@
                     <option value="/udp">UDP Only</option>
                 </select>
             </div>
+            
+            <div class="terminal">
+                <div class="terminal-header">
+                    <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+                </div>
+                <div class="cmd-line">
+                    <span class="prompt">root@server:~#</span>
+                    <span id="output-port" class="cmd-output">sudo ufw allow 22</span>
+                </div>
+            </div>
+            <button class="copy-btn" onclick="copyText('output-port')">Copy Command</button>
         </div>
 
         <div id="ip-section" class="hidden">
+             <div class="form-group">
+                <label>Action</label>
+                <select id="action-ip" onchange="generate()">
+                    <option value="allow">Allow (Whitelist IP)</option>
+                    <option value="deny">Deny (Blacklist IP)</option>
+                    <option value="delete allow">Delete 'Allow' Rule</option>
+                    <option value="delete deny">Delete 'Deny' Rule</option>
+                </select>
+            </div>
             <div class="form-group">
                 <label>IP Address (e.g. 192.168.1.5) or CIDR (10.0.0.0/24)</label>
                 <input type="text" id="ipInput" placeholder="127.0.0.1" onkeyup="generate()">
@@ -230,26 +277,52 @@
                 <label>Limit to Specific Port? (Optional)</label>
                 <input type="text" id="ipPortInput" placeholder="e.g. 3306 (MySQL)" onkeyup="generate()">
             </div>
+
+            <div class="terminal">
+                <div class="terminal-header">
+                    <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+                </div>
+                <div class="cmd-line">
+                    <span class="prompt">root@server:~#</span>
+                    <span id="output-ip" class="cmd-output">sudo ufw allow from 127.0.0.1</span>
+                </div>
+            </div>
+            <button class="copy-btn" onclick="copyText('output-ip')">Copy Command</button>
         </div>
 
-        <div class="terminal">
-            <div class="terminal-header">
-                <div class="dot red"></div>
-                <div class="dot yellow"></div>
-                <div class="dot green"></div>
-            </div>
-            <div class="cmd-line">
-                <span class="prompt">root@server:~#</span>
-                <span id="output" class="cmd-output">sudo ufw allow 22</span>
-            </div>
-        </div>
+        <div id="info-section" class="hidden info-box">
+            <h3>What is UFW?</h3>
+            <p><strong>UFW (Uncomplicated Firewall)</strong> is a user-friendly frontend for iptables on Linux. It simplifies the process of configuring a firewall to protect your server.</p>
 
-        <button class="copy-btn" onclick="copyText()">Copy Command to Clipboard</button>
+            <h4>Key Concepts:</h4>
+            <ul>
+                <li><strong>Allow:</strong> Opens a port so traffic can come in (e.g., for a website).</li>
+                <li><strong>Deny:</strong> Blocks traffic silently.</li>
+                <li><strong>Reject:</strong> Blocks traffic but tells the sender "Connection refused".</li>
+            </ul>
+
+            <h4>Common Port Cheat Sheet:</h4>
+            <div class="cheat-sheet">
+                <div class="cheat-item"><code>22</code> : SSH (Remote Login)</div>
+                <div class="cheat-item"><code>80</code> : HTTP (Web Non-Secure)</div>
+                <div class="cheat-item"><code>443</code> : HTTPS (Web Secure)</div>
+                <div class="cheat-item"><code>21</code> : FTP (File Transfer)</div>
+                <div class="cheat-item"><code>3306</code> : MySQL Database</div>
+                <div class="cheat-item"><code>53</code> : DNS</div>
+            </div>
+
+            <h4 style="margin-top:20px;">Essential Commands:</h4>
+            <ul>
+                <li>Enable Firewall: <code>sudo ufw enable</code></li>
+                <li>Check Status: <code>sudo ufw status verbose</code></li>
+                <li>Reset Rules: <code>sudo ufw reset</code></li>
+            </ul>
+        </div>
 
         <div class="footer">
             <div class="hit-counter-box">
                 <span class="hit-counter-text">Visitor Count:</span>
-                <strong style="color:white;">(Local Mode)</strong> 
+                <strong style="color:white;">(Local)</strong> 
             </div>
             <br><br>
             Developed by <a href="https://github.com/Sohag1192" target="_blank">Sohag1192</a>
@@ -263,24 +336,41 @@
 
     function switchMode(mode) {
         currentMode = mode;
+        
+        // Tab UI
         const tabs = document.querySelectorAll('.tab');
-        tabs[0].classList.toggle('active', mode === 'port');
-        tabs[1].classList.toggle('active', mode === 'ip');
-        document.getElementById('port-section').classList.toggle('hidden', mode !== 'port');
-        document.getElementById('ip-section').classList.toggle('hidden', mode !== 'ip');
-        generate(false); // Update without incrementing counter
+        tabs.forEach(t => t.classList.remove('active'));
+        if(mode === 'port') tabs[0].classList.add('active');
+        if(mode === 'ip') tabs[1].classList.add('active');
+        if(mode === 'info') tabs[2].classList.add('active');
+
+        // Content Switching
+        document.getElementById('port-section').classList.add('hidden');
+        document.getElementById('ip-section').classList.add('hidden');
+        document.getElementById('info-section').classList.add('hidden');
+
+        if(mode === 'port') document.getElementById('port-section').classList.remove('hidden');
+        if(mode === 'ip') document.getElementById('ip-section').classList.remove('hidden');
+        if(mode === 'info') document.getElementById('info-section').classList.remove('hidden');
+        
+        generate(false);
     }
 
     function generate(increment = true) {
-        const action = document.getElementById('action').value;
-        const output = document.getElementById('output');
+        if (currentMode === 'info') return;
+
         let command = "sudo ufw ";
+        let outputId = "";
 
         if (currentMode === 'port') {
+            outputId = "output-port";
+            const action = document.getElementById('action-port').value;
             let port = document.getElementById('portInput').value.trim() || "22";
             const protocol = document.getElementById('protocol').value;
             command += `${action} ${port}${protocol}`;
         } else {
+            outputId = "output-ip";
+            const action = document.getElementById('action-ip').value;
             let ip = document.getElementById('ipInput').value.trim() || "{ip_address}";
             let specificPort = document.getElementById('ipPortInput').value.trim();
             
@@ -290,36 +380,37 @@
                 command += `${action} from ${ip}`;
             }
         }
-        output.textContent = command;
+        
+        if(document.getElementById(outputId)) {
+            document.getElementById(outputId).textContent = command;
+        }
     }
 
-    function copyText() {
-        const text = document.getElementById('output').textContent;
-        const btn = document.querySelector('.copy-btn');
+    function copyText(elementId) {
+        const text = document.getElementById(elementId).textContent;
+        const btn = document.activeElement;
 
         // Increment Session Counter
         generationCount++;
         document.getElementById('sessionCount').textContent = `Generations: ${generationCount}`;
 
-        navigator.clipboard.writeText(text).then(() => {
-            btn.textContent = "✓ Command Copied!";
+        // Robust Copy
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+            document.execCommand('copy');
+            btn.textContent = "✓ Copied!";
             btn.style.background = "#fff";
             setTimeout(() => {
-                btn.textContent = "Copy Command to Clipboard";
+                btn.textContent = "Copy Command";
                 btn.style.background = "";
             }, 2000);
-        }).catch(err => {
-            // Fallback for file:// protocol
-            const ta = document.createElement('textarea');
-            ta.value = text;
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            document.body.removeChild(ta);
-            
-            btn.textContent = "✓ Command Copied!";
-            setTimeout(() => { btn.textContent = "Copy Command to Clipboard"; }, 2000);
-        });
+        } catch (err) {
+            alert("Manual copy required.");
+        }
+        document.body.removeChild(ta);
     }
 
     // Init
