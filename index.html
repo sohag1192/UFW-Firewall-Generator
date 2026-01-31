@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UFW Command Generator</title>
     <style>
-        /* Clean, Dark-Mode Inspired Styling */
         :root {
             --primary: #007bff;
             --bg-color: #f4f7f6;
@@ -21,7 +20,8 @@
             color: var(--text-color);
             padding: 40px 20px;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
         }
 
         .container {
@@ -58,7 +58,7 @@
             outline: none;
         }
 
-        /* Tabs for switching modes */
+        /* Tabs */
         .tabs {
             display: flex;
             margin-bottom: 20px;
@@ -81,13 +81,12 @@
 
         .hidden { display: none; }
 
-        /* Output Box Styling */
+        /* Output Area */
         .result-area {
             margin-top: 30px;
             background: var(--code-bg);
             padding: 20px;
             border-radius: 8px;
-            position: relative;
         }
 
         .command-output {
@@ -109,18 +108,32 @@
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
+            transition: background 0.2s;
         }
 
         .copy-btn:hover { background-color: #0056b3; }
 
-        .note {
-            font-size: 0.85em;
-            margin-top: 15px;
-            background: #fff3cd;
-            color: #856404;
-            padding: 10px;
-            border-radius: 4px;
-            border-left: 4px solid #ffeeba;
+        /* Footer / Attribution */
+        .footer {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .footer a:hover { text-decoration: underline; }
+
+        .github-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            margin-right: 5px;
+            vertical-align: middle;
+            fill: currentColor;
         }
     </style>
 </head>
@@ -147,7 +160,7 @@
     <div id="port-section">
         <div class="form-group">
             <label>Port Number or Service Name</label>
-            <input type="text" id="portInput" placeholder="e.g. 80, 443, 22, ssh" oninput="generate()">
+            <input type="text" id="portInput" placeholder="e.g. 80, 443, 22, ssh" onkeyup="generate()">
         </div>
         <div class="form-group">
             <label>Protocol</label>
@@ -162,13 +175,12 @@
     <div id="ip-section" class="hidden">
         <div class="form-group">
             <label>IP Address or Subnet</label>
-            <input type="text" id="ipInput" placeholder="e.g. 192.168.1.5 or 10.0.0.0/24" oninput="generate()">
+            <input type="text" id="ipInput" placeholder="e.g. 192.168.1.5 or 10.0.0.0/24" onkeyup="generate()">
         </div>
         
         <div class="form-group">
             <label>Specific Port? (Optional)</label>
-            <input type="text" id="ipPortInput" placeholder="Leave empty for ALL ports" oninput="generate()">
-            <small style="color:#666;">If filled, the IP will only have access to this specific port.</small>
+            <input type="text" id="ipPortInput" placeholder="Leave empty for ALL ports" onkeyup="generate()">
         </div>
     </div>
 
@@ -176,10 +188,14 @@
         <div class="command-output" id="output">sudo ufw allow 80</div>
     </div>
     <button class="copy-btn" onclick="copyText()">Copy Command</button>
+</div>
 
-    <div class="note">
-        <strong>Tip:</strong> Always run <code>sudo ufw status</code> to check your active rules.
-    </div>
+<div class="footer">
+    Developed by 
+    <a href="https://github.com/Sohag1192" target="_blank">
+        <svg class="github-icon" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        Sohag1192
+    </a>
 </div>
 
 <script>
@@ -187,17 +203,12 @@
 
     function switchMode(mode) {
         currentMode = mode;
-        
-        // Update UI Tabs
         const tabs = document.querySelectorAll('.tab');
         tabs[0].classList.toggle('active', mode === 'port');
         tabs[1].classList.toggle('active', mode === 'ip');
-
-        // Show/Hide Sections
         document.getElementById('port-section').classList.toggle('hidden', mode !== 'port');
         document.getElementById('ip-section').classList.toggle('hidden', mode !== 'ip');
-
-        generate(); // Update output immediately
+        generate(); 
     }
 
     function generate() {
@@ -206,45 +217,69 @@
         let command = "sudo ufw ";
 
         if (currentMode === 'port') {
-            // --- PORT MODE LOGIC ---
             let port = document.getElementById('portInput').value.trim();
             const protocol = document.getElementById('protocol').value;
-            
             if (!port) port = "{port}"; 
-
-            // Syntax: sudo ufw allow 80/tcp
             command += `${action} ${port}${protocol}`;
-
         } else {
-            // --- IP MODE LOGIC ---
             let ip = document.getElementById('ipInput').value.trim();
             let specificPort = document.getElementById('ipPortInput').value.trim();
-
             if (!ip) ip = "{ip_address}";
-
+            
             if (specificPort) {
-                // Syntax: sudo ufw allow from 1.2.3.4 to any port 22
                 command += `${action} from ${ip} to any port ${specificPort}`;
             } else {
-                // Syntax: sudo ufw allow from 1.2.3.4
                 command += `${action} from ${ip}`;
             }
         }
-
-        output.textContent = command;
+        output.innerText = command;
     }
 
     function copyText() {
-        const text = document.getElementById('output').textContent;
-        navigator.clipboard.writeText(text).then(() => {
-            const btn = document.querySelector('.copy-btn');
-            btn.textContent = "Copied!";
-            btn.style.background = "#28a745"; 
-            setTimeout(() => {
-                btn.textContent = "Copy Command";
-                btn.style.background = ""; 
-            }, 2000);
-        });
+        const text = document.getElementById('output').innerText;
+        
+        // Strategy 1: Modern API (Works on localhost/HTTPS)
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => {
+                showCopiedFeedback();
+            }).catch(() => {
+                fallbackCopy(text);
+            });
+        } else {
+            // Strategy 2: Fallback for local files (file://)
+            fallbackCopy(text);
+        }
+    }
+
+    function fallbackCopy(text) {
+        // Create a temporary text area to select and copy from
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";  // Avoid scrolling to bottom
+        textArea.style.opacity = "0";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        try {
+            document.execCommand('copy');
+            showCopiedFeedback();
+        } catch (err) {
+            alert('Unable to copy automatically. Please copy manually.');
+        }
+
+        document.body.removeChild(textArea);
+    }
+
+    function showCopiedFeedback() {
+        const btn = document.querySelector('.copy-btn');
+        const originalText = btn.innerText;
+        btn.innerText = "Copied!";
+        btn.style.background = "#28a745"; 
+        setTimeout(() => {
+            btn.innerText = "Copy Command";
+            btn.style.background = ""; 
+        }, 2000);
     }
 
     // Initialize
