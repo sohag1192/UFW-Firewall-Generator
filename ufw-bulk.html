@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UFW Bulk IP Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --border: #334155;
+            --primary: #3b82f6; /* Electric Blue */
+            --primary-hover: #2563eb;
+            --success: #10b981;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --code-bg: #020617;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header h1 { margin: 0; font-size: 1.5rem; letter-spacing: -0.5px; }
+        .badge { background: var(--primary); padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; }
+
+        /* MAIN LAYOUT: SPLIT SCREEN */
+        .workspace {
+            display: flex;
+            gap: 20px;
+            flex: 1; /* Fill remaining height */
+            min-height: 0; /* Required for scrolling inside flex items */
+        }
+
+        .panel {
+            flex: 1;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        /* CONTROLS BAR */
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        label { display: block; margin-bottom: 5px; font-size: 0.8rem; color: var(--text-muted); }
+        
+        select, input {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            box-sizing: border-box; 
+        }
+        select:focus, input:focus { border-color: var(--primary); outline: none; }
+
+        /* TEXT AREAS */
+        textarea {
+            flex: 1;
+            background: var(--code-bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            resize: none;
+            white-space: pre;
+            overflow-y: scroll;
+        }
+        
+        textarea::placeholder { color: #334155; }
+
+        .line-count { font-size: 0.8rem; color: var(--text-muted); }
+
+        /* BUTTONS */
+        .action-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+        .action-btn:hover { background: var(--primary-hover); }
+
+        .copy-btn {
+            background: var(--success);
+            color: #000;
+        }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .footer a { color: var(--primary); text-decoration: none; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div style="display:flex; align-items:center; gap:10px;">
+        <h1>UFW Bulk Manager</h1>
+        <span class="badge">MASS EDITION</span>
+    </div>
+    <div style="font-size:0.9rem; color:#94a3b8;">
+        Developed by <a href="https://github.com/Sohag1192" target="_blank" style="color:#fff;">Sohag1192</a>
+    </div>
+</div>
+
+<div class="controls">
+    <div>
+        <label>Action</label>
+        <select id="action" onchange="process()">
+            <option value="allow">Allow (Whitelist)</option>
+            <option value="deny">Deny (Blacklist)</option>
+            <option value="delete allow">Delete Allow Rule</option>
+            <option value="delete deny">Delete Deny Rule</option>
+        </select>
+    </div>
+    <div>
+        <label>Specific Port (Optional)</label>
+        <input type="text" id="port" placeholder="e.g. 22 or 80" onkeyup="process()">
+    </div>
+    <div>
+        <label>Comment (Optional)</label>
+        <input type="text" id="comment" placeholder="e.g. Bulk Import Jan 2026" onkeyup="process()">
+    </div>
+</div>
+
+<div class="workspace">
+    
+    <div class="panel">
+        <div class="panel-header">
+            <span>1. Paste IP List (One per line)</span>
+            <span class="line-count" id="inputCount">0 IPs</span>
+        </div>
+        <textarea id="inputArea" placeholder="192.168.1.10
+192.168.1.11
+192.168.1.12
+..." oninput="process()"></textarea>
+        <button class="action-btn" style="background:#334155;" onclick="cleanInput()">✨ Clean & Remove Duplicates</button>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">
+            <span>2. Generated Script</span>
+            <span class="line-count" id="outputCount">0 Commands</span>
+        </div>
+        <textarea id="outputArea" readonly></textarea>
+        <button class="action-btn copy-btn" onclick="copyOutput()">Copy Script to Clipboard</button>
+    </div>
+
+</div>
+
+<div class="footer">
+    Visitor Count: <strong style="color:white;">(Local)</strong>
+</div>
+
+<script>
+    function process() {
+        // 1. Get Values
+        const rawInput = document.getElementById('inputArea').value;
+        const action = document.getElementById('action').value;
+        const port = document.getElementById('port').value.trim();
+        const comment = document.getElementById('comment').value.trim();
+
+        // 2. Parse Lines
+        const lines = rawInput.split(/\r?\n/);
+        let commands = [];
+        let validIpCount = 0;
+
+        // Base Script Header
+        let script = `#!/bin/bash
+# Bulk UFW Script Generated by UFW Bulk Manager
+# Total IPs: {COUNT}
+# Action: ${action.toUpperCase()}
+\n`;
+
+        lines.forEach(line => {
+            let ip = line.trim();
+            if (!ip) return; // Skip empty lines
+
+            // Basic Validation: Does it look like an IP or Subnet?
+            // (Contains dot or colon, and is not a comment)
+            if ((ip.includes('.') || ip.includes(':')) && !ip.startsWith('#')) {
+                validIpCount++;
+                
+                // Build Command
+                let cmd = `sudo ufw ${action} from ${ip}`;
+                
+                if (port) {
+                    cmd += ` to any port ${port}`;
+                }
+                
+                if (comment) {
+                    cmd += ` comment '${comment}'`;
+                }
+
+                commands.push(cmd);
+            }
+        });
+
+        // 3. Update UI
+        document.getElementById('inputCount').innerText = `${validIpCount} IPs detected`;
+        document.getElementById('outputCount').innerText = `${commands.length} Commands`;
+
+        script = script.replace("{COUNT}", validIpCount);
+        script += commands.join('\n');
+        
+        // Add footer to script
+        if (commands.length > 0) {
+            script += `\n\n# Reload UFW to apply changes\nsudo ufw reload\necho "Done! Processed ${validIpCount} rules."`;
+        } else {
+            script = "# Waiting for input...\n# Paste IP addresses on the left side.";
+        }
+
+        document.getElementById('outputArea').value = script;
+    }
+
+    function cleanInput() {
+        const raw = document.getElementById('inputArea').value;
+        const lines = raw.split(/\r?\n/);
+        
+        // Use Set to remove duplicates
+        const uniqueIPs = new Set();
+        
+        lines.forEach(line => {
+            const trimmed = line.trim();
+            if(trimmed && (trimmed.includes('.') || trimmed.includes(':'))) {
+                uniqueIPs.add(trimmed);
+            }
+        });
+
+        // Convert back to string
+        const cleanText = Array.from(uniqueIPs).join('\n');
+        document.getElementById('inputArea').value = cleanText;
+        
+        // Trigger process again
+        process();
+        
+        // Visual feedback
+        const btn = document.querySelector('button[onclick="cleanInput()"]');
+        const oldText = btn.innerText;
+        btn.innerText = "✓ Cleaned!";
+        setTimeout(() => btn.innerText = oldText, 1500);
+    }
+
+    function copyOutput() {
+        const text = document.getElementById('outputArea').value;
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.querySelector('.copy-btn');
+            const oldText = btn.innerText;
+            btn.innerText = "✓ Copied!";
+            setTimeout(() => btn.innerText = oldText, 2000);
+        });
+    }
+</script>
+
+</body>
+</html>
