@@ -3,252 +3,577 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UFW Command Generator</title>
+    <title>UFW Premium Studio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* Clean, Dark-Mode Inspired Styling */
         :root {
-            --primary: #007bff;
-            --bg-color: #f4f7f6;
-            --card-bg: #ffffff;
-            --text-color: #333;
-            --code-bg: #2d2d2d;
-            --code-text: #50fa7b;
+            /* Premium Dark Theme Variables */
+            --bg-app: #0f172a;
+            --bg-panel: #1e293b;
+            --bg-input: #0f172a;
+            --primary: #3b82f6;      /* Electric Blue */
+            --primary-glow: rgba(59, 130, 246, 0.4);
+            --accent: #10b981;       /* Success Green */
+            --danger: #ef4444;       /* Error Red */
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --radius: 12px;
+            --shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
         }
+
+        * { box-sizing: border-box; transition: all 0.2s ease-in-out; }
 
         body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            background-color: var(--bg-app);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- HEADER --- */
+        .navbar {
+            width: 100%;
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand {
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .author-link {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .author-link:hover { color: var(--primary); }
+
+        /* --- MAIN CONTAINER --- */
+        .app-container {
+            width: 100%;
+            max-width: 1000px;
             padding: 40px 20px;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            gap: 30px;
         }
 
-        .container {
-            background-color: var(--card-bg);
-            width: 100%;
-            max-width: 600px;
+        /* --- NAVIGATION TABS --- */
+        .nav-pills {
+            display: flex;
+            background: var(--bg-panel);
+            padding: 5px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            gap: 5px;
+        }
+
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: 600;
+            color: var(--text-muted);
+            user-select: none;
+        }
+
+        .nav-item:hover { color: var(--text-main); background: rgba(255,255,255,0.03); }
+        
+        .nav-item.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px var(--primary-glow);
+        }
+
+        /* --- CONTENT CARDS --- */
+        .view-section { display: none; animation: fadeIn 0.4s ease; }
+        .view-section.active { display: block; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
             padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
         }
 
-        h2 { text-align: center; margin-bottom: 25px; color: #444; }
-
-        .form-group { margin-bottom: 20px; }
+        /* --- FORM ELEMENTS --- */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .full-span { grid-column: span 2; }
 
         label {
             display: block;
             margin-bottom: 8px;
+            font-size: 0.85rem;
             font-weight: 600;
-            color: #555;
+            color: var(--text-muted);
         }
 
-        select, input[type="text"] {
+        input, select, textarea {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 6px;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-
-        select:focus, input:focus {
-            border-color: var(--primary);
+            padding: 12px 16px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
             outline: none;
         }
 
-        /* Tabs for switching modes */
-        .tabs {
-            display: flex;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #e0e0e0;
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
-        
-        .tab {
-            flex: 1;
-            padding: 10px;
-            text-align: center;
+
+        textarea { resize: vertical; min-height: 150px; line-height: 1.6; }
+
+        /* --- BUTTONS --- */
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
             cursor: pointer;
-            font-weight: bold;
-            color: #888;
+            border: none;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
-        .tab.active {
-            border-bottom: 3px solid var(--primary);
-            color: var(--primary);
+        .btn-primary { background: var(--primary); color: white; width: 100%; }
+        .btn-primary:hover { background: #2563eb; transform: translateY(-1px); }
+
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); width: 100%; margin-top: 10px;}
+        .btn-outline:hover { border-color: var(--text-muted); color: var(--text-main); }
+        
+        .btn-danger-sm {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
         }
+        .btn-danger-sm:hover { background: rgba(239, 68, 68, 0.2); }
 
-        .hidden { display: none; }
-
-        /* Output Box Styling */
-        .result-area {
+        /* --- TERMINAL PREVIEW --- */
+        .terminal-window {
+            background: #000;
+            border-radius: 8px;
+            border: 1px solid #333;
             margin-top: 30px;
-            background: var(--code-bg);
+            overflow: hidden;
+        }
+
+        .terminal-header {
+            background: #1a1a1a;
+            padding: 10px 15px;
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid #333;
+        }
+
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .red { background: #ff5f56; } .yellow { background: #ffbd2e; } .green { background: #27c93f; }
+
+        .terminal-body {
+            padding: 20px;
+            color: #4ade80; /* Terminal Green */
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        /* --- STAGED RULES LIST --- */
+        .staged-list {
+            margin-top: 20px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: rgba(0,0,0,0.2);
+        }
+        .staged-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+        .staged-item:last-child { border-bottom: none; }
+
+        /* --- GUIDE GRID --- */
+        .guide-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .guide-item {
+            background: rgba(255,255,255,0.03);
             padding: 20px;
             border-radius: 8px;
-            position: relative;
+            border: 1px solid var(--border);
         }
+        .guide-item h4 { color: var(--primary); margin: 0 0 10px 0; }
+        .guide-item code { background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-family: 'JetBrains Mono'; color: #fbbf24; }
 
-        .command-output {
-            color: var(--code-text);
-            font-family: monospace;
-            font-size: 1.1em;
-            word-break: break-all;
+        /* --- VISITOR COUNTER SLOT --- */
+        .footer-counter {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.9rem;
         }
-
-        .copy-btn {
-            display: block;
-            width: 100%;
-            margin-top: 15px;
-            padding: 12px;
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .copy-btn:hover { background-color: #0056b3; }
-
-        .note {
-            font-size: 0.85em;
-            margin-top: 15px;
-            background: #fff3cd;
-            color: #856404;
-            padding: 10px;
-            border-radius: 4px;
-            border-left: 4px solid #ffeeba;
+        .counter-badge {
+            background: rgba(255,255,255,0.05);
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>UFW Firewall Generator</h2>
-
-    <div class="tabs">
-        <div class="tab active" onclick="switchMode('port')">Port Management</div>
-        <div class="tab" onclick="switchMode('ip')">IP Address Management</div>
-    </div>
-
-    <div class="form-group">
-        <label>Action</label>
-        <select id="action" onchange="generate()">
-            <option value="allow">Allow (Whitelist)</option>
-            <option value="deny">Deny (Blacklist)</option>
-            <option value="delete allow">Delete 'Allow' Rule</option>
-            <option value="delete deny">Delete 'Deny' Rule</option>
-        </select>
-    </div>
-
-    <div id="port-section">
-        <div class="form-group">
-            <label>Port Number or Service Name</label>
-            <input type="text" id="portInput" placeholder="e.g. 80, 443, 22, ssh" oninput="generate()">
+    <nav class="navbar">
+        <div class="brand">
+            <span>🛡️ UFW Premium</span>
         </div>
-        <div class="form-group">
-            <label>Protocol</label>
-            <select id="protocol" onchange="generate()">
-                <option value="">TCP & UDP (Both)</option>
-                <option value="/tcp">TCP Only</option>
-                <option value="/udp">UDP Only</option>
-            </select>
-        </div>
-    </div>
+        <a href="https://github.com/Sohag1192" target="_blank" class="author-link">
+            <svg height="20" viewBox="0 0 16 16" width="20" style="fill:currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+            Sohag1192
+        </a>
+    </nav>
 
-    <div id="ip-section" class="hidden">
-        <div class="form-group">
-            <label>IP Address or Subnet</label>
-            <input type="text" id="ipInput" placeholder="e.g. 192.168.1.5 or 10.0.0.0/24" oninput="generate()">
-        </div>
+    <div class="app-container">
         
-        <div class="form-group">
-            <label>Specific Port? (Optional)</label>
-            <input type="text" id="ipPortInput" placeholder="Leave empty for ALL ports" oninput="generate()">
-            <small style="color:#666;">If filled, the IP will only have access to this specific port.</small>
+        <div class="nav-pills">
+            <div class="nav-item active" onclick="switchTab('builder')">🔨 Rule Builder</div>
+            <div class="nav-item" onclick="switchTab('bulk')">📦 Bulk Import</div>
+            <div class="nav-item" onclick="switchTab('guide')">📚 Guide & Cheat Sheet</div>
         </div>
-    </div>
 
-    <div class="result-area">
-        <div class="command-output" id="output">sudo ufw allow 80</div>
-    </div>
-    <button class="copy-btn" onclick="copyText()">Copy Command</button>
+        <div id="view-builder" class="view-section active">
+            <div class="card">
+                <h3 style="margin-top:0;">Single Rule Generator</h3>
+                
+                <div class="form-grid">
+                    <div>
+                        <label>Rule Type</label>
+                        <select id="b-type" onchange="toggleBuilderFields()">
+                            <option value="port">Port Only (Global Access)</option>
+                            <option value="ip">IP Address (Whitelist User)</option>
+                            <option value="complex">IP to Specific Port (Secure)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Action</label>
+                        <select id="b-action">
+                            <option value="allow">Allow (Green)</option>
+                            <option value="deny">Deny (Red)</option>
+                            <option value="limit">Limit (Anti-Brute Force)</option>
+                        </select>
+                    </div>
 
-    <div class="note">
-        <strong>Tip:</strong> Always run <code>sudo ufw status</code> to check your active rules.
+                    <div id="field-ip" class="full-span" style="display:none;">
+                        <label>IP Address or Subnet (CIDR)</label>
+                        <input type="text" id="b-ip" placeholder="e.g. 192.168.1.50 or 10.0.0.0/24">
+                    </div>
+
+                    <div id="field-port" class="full-span">
+                        <label id="lbl-port">Port Number</label>
+                        <input type="text" id="b-port" placeholder="e.g. 80, 443, 22">
+                    </div>
+
+                    <div id="field-proto" class="full-span">
+                        <label>Protocol</label>
+                        <select id="b-proto">
+                            <option value="">TCP & UDP (Default)</option>
+                            <option value="/tcp">TCP Only</option>
+                            <option value="/udp">UDP Only</option>
+                        </select>
+                    </div>
+
+                    <div class="full-span">
+                        <label>Comment (Optional)</label>
+                        <input type="text" id="b-comment" placeholder="e.g. Web Server">
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="addBuilderRule()">+ Add Rule to Stack</button>
+
+                <div id="staged-container" style="display:none;">
+                    <h4 style="margin:25px 0 10px; color:var(--text-muted);">Active Rules Stack</h4>
+                    <div class="staged-list" id="staged-list">
+                        </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="view-bulk" class="view-section">
+            <div class="card">
+                <h3 style="margin-top:0;">Mass IP Processor</h3>
+                <p style="color:var(--text-muted); font-size:0.9rem;">Paste a list of IP addresses (one per line) to apply the same rule to all of them.</p>
+
+                <div class="form-grid">
+                    <div>
+                        <label>Action</label>
+                        <select id="bulk-action">
+                            <option value="deny">Deny (Block Botnet)</option>
+                            <option value="allow">Allow (Whitelist Team)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Specific Port (Optional)</label>
+                        <input type="text" id="bulk-port" placeholder="Leave empty for ALL ports">
+                    </div>
+                </div>
+
+                <label>Paste IP List</label>
+                <textarea id="bulk-input" placeholder="192.168.1.1&#10;192.168.1.2&#10;192.168.1.3..." oninput="updateBulkPreview()"></textarea>
+                
+                <div style="display:flex; justify-content:space-between; margin-top:10px;">
+                    <span id="bulk-stats" style="font-size:0.85rem; color:var(--text-muted); padding-top:10px;">0 IPs detected</span>
+                    <button class="btn btn-outline" style="width:auto; margin:0;" onclick="cleanBulkInput()">✨ Remove Duplicates</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-guide" class="view-section">
+            <div class="guide-grid">
+                <div class="guide-item">
+                    <h4>Essential Commands</h4>
+                    <p>Enable: <code>sudo ufw enable</code></p>
+                    <p>Disable: <code>sudo ufw disable</code></p>
+                    <p>Status: <code>sudo ufw status verbose</code></p>
+                    <p>Reload: <code>sudo ufw reload</code></p>
+                </div>
+                <div class="guide-item">
+                    <h4>Common Ports</h4>
+                    <p><code>22</code> SSH (Remote Login)</p>
+                    <p><code>80</code> HTTP (Web)</p>
+                    <p><code>443</code> HTTPS (Secure Web)</p>
+                    <p><code>3306</code> MySQL Database</p>
+                </div>
+                <div class="guide-item">
+                    <h4>Logic Explainers</h4>
+                    <p><strong>Allow:</strong> Opens the door.</p>
+                    <p><strong>Deny:</strong> Blocks silently (stealth).</p>
+                    <p><strong>Reject:</strong> Blocks & tells sender "No".</p>
+                    <p><strong>Limit:</strong> Blocks if 6+ hits in 30 secs.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+                <span style="margin-left:10px; font-size:0.8rem; color:#666;">setup_firewall.sh</span>
+            </div>
+            <div class="terminal-body" id="final-output"># Script waiting for input...</div>
+        </div>
+
+        <button class="btn btn-primary" style="margin-top:20px;" onclick="copyScript()">Copy Script to Clipboard</button>
+
+        <div class="footer-counter">
+            <div class="counter-badge">
+                <span>Visitor Count:</span>
+                <strong style="color:var(--accent);">(Local Mode)</strong>
+            </div>
+            <br>
+            &copy; 2026 UFW Premium Studio. Developed by <a href="https://github.com/Sohag1192" style="color:var(--primary); text-decoration:none;">Sohag1192</a>.
+        </div>
+
     </div>
-</div>
 
 <script>
-    let currentMode = 'port';
+    // State
+    let rulesStack = [];
+    let currentTab = 'builder';
 
-    function switchMode(mode) {
-        currentMode = mode;
+    // UI Switcher
+    function switchTab(tab) {
+        currentTab = tab;
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
         
-        // Update UI Tabs
-        const tabs = document.querySelectorAll('.tab');
-        tabs[0].classList.toggle('active', mode === 'port');
-        tabs[1].classList.toggle('active', mode === 'ip');
-
-        // Show/Hide Sections
-        document.getElementById('port-section').classList.toggle('hidden', mode !== 'port');
-        document.getElementById('ip-section').classList.toggle('hidden', mode !== 'ip');
-
-        generate(); // Update output immediately
+        // Activate
+        document.querySelector(`.nav-item[onclick="switchTab('${tab}')"]`).classList.add('active');
+        document.getElementById(`view-${tab}`).classList.add('active');
+        
+        generateScript(); // Refresh output
     }
 
-    function generate() {
-        const action = document.getElementById('action').value;
-        const output = document.getElementById('output');
-        let command = "sudo ufw ";
+    // Builder Logic
+    function toggleBuilderFields() {
+        const type = document.getElementById('b-type').value;
+        const fIP = document.getElementById('field-ip');
+        const fPort = document.getElementById('field-port');
+        const fProto = document.getElementById('field-proto');
 
-        if (currentMode === 'port') {
-            // --- PORT MODE LOGIC ---
-            let port = document.getElementById('portInput').value.trim();
-            const protocol = document.getElementById('protocol').value;
-            
-            if (!port) port = "{port}"; 
+        fIP.style.display = (type === 'port') ? 'none' : 'block';
+        fPort.style.display = (type === 'ip') ? 'none' : 'block';
+        fProto.style.display = (type === 'ip') ? 'none' : 'block';
+        
+        document.getElementById('lbl-port').innerText = (type === 'complex') 
+            ? "Target Port (Access Limit)" 
+            : "Port Number";
+    }
 
-            // Syntax: sudo ufw allow 80/tcp
-            command += `${action} ${port}${protocol}`;
+    function addBuilderRule() {
+        const type = document.getElementById('b-type').value;
+        const action = document.getElementById('b-action').value;
+        const ip = document.getElementById('b-ip').value.trim();
+        const port = document.getElementById('b-port').value.trim();
+        const proto = document.getElementById('b-proto').value;
+        const comment = document.getElementById('b-comment').value.trim();
 
+        let cmd = "";
+
+        if (type === 'port') {
+            if(!port) return alert("Port required");
+            cmd = `ufw ${action} ${port}${proto}`;
+        } else if (type === 'ip') {
+            if(!ip) return alert("IP required");
+            cmd = `ufw ${action} from ${ip}`;
+        } else if (type === 'complex') {
+            if(!ip || !port) return alert("IP and Port required");
+            cmd = `ufw ${action} from ${ip} to any port ${port}`;
+            if(proto === '/tcp') cmd += " proto tcp";
+            if(proto === '/udp') cmd += " proto udp";
+        }
+
+        if(comment) cmd += ` comment '${comment}'`;
+
+        rulesStack.push(cmd);
+        renderStack();
+        generateScript();
+    }
+
+    function removeRule(index) {
+        rulesStack.splice(index, 1);
+        renderStack();
+        generateScript();
+    }
+
+    function renderStack() {
+        const list = document.getElementById('staged-list');
+        const container = document.getElementById('staged-container');
+        
+        if(rulesStack.length > 0) {
+            container.style.display = 'block';
+            list.innerHTML = rulesStack.map((r, i) => `
+                <div class="staged-item">
+                    <code>sudo ${r}</code>
+                    <button class="btn-danger-sm" onclick="removeRule(${i})">Remove</button>
+                </div>
+            `).join('');
         } else {
-            // --- IP MODE LOGIC ---
-            let ip = document.getElementById('ipInput').value.trim();
-            let specificPort = document.getElementById('ipPortInput').value.trim();
+            container.style.display = 'none';
+        }
+    }
 
-            if (!ip) ip = "{ip_address}";
+    // Bulk Logic
+    function cleanBulkInput() {
+        const raw = document.getElementById('bulk-input').value;
+        const unique = [...new Set(raw.split(/\r?\n/).map(s => s.trim()).filter(s => s))];
+        document.getElementById('bulk-input').value = unique.join('\n');
+        updateBulkPreview();
+    }
 
-            if (specificPort) {
-                // Syntax: sudo ufw allow from 1.2.3.4 to any port 22
-                command += `${action} from ${ip} to any port ${specificPort}`;
-            } else {
-                // Syntax: sudo ufw allow from 1.2.3.4
-                command += `${action} from ${ip}`;
+    function updateBulkPreview() {
+        if(currentTab === 'bulk') generateScript();
+    }
+
+    // Core Generator
+    function generateScript() {
+        const header = `#!/bin/bash\n# Generated by UFW Premium Studio\n\n# 1. Reset & Configure Defaults\nsudo ufw --force reset\nsudo ufw default deny incoming\nsudo ufw default allow outgoing\n\n# --- RULES START --- \n`;
+        const footer = `\n# --- RULES END ---\n\n# 2. Apply Changes\nsudo ufw --force enable\nsudo ufw reload\nsudo ufw status verbose`;
+
+        let body = "";
+
+        if (currentTab === 'builder' || currentTab === 'guide') {
+            if (rulesStack.length === 0) body = "# Add rules using the Builder tab above...";
+            else body = rulesStack.map(r => `sudo ${r}`).join('\n');
+        } 
+        else if (currentTab === 'bulk') {
+            const raw = document.getElementById('bulk-input').value;
+            const action = document.getElementById('bulk-action').value;
+            const port = document.getElementById('bulk-port').value.trim();
+            const lines = raw.split(/\r?\n/).filter(l => l.trim().length > 0 && !l.startsWith('#'));
+            
+            document.getElementById('bulk-stats').innerText = `${lines.length} IPs ready to process`;
+
+            if (lines.length === 0) body = "# Paste IPs in the text area above...";
+            else {
+                body = lines.map(ip => {
+                    let c = `sudo ufw ${action} from ${ip.trim()}`;
+                    if(port) c += ` to any port ${port}`;
+                    return c;
+                }).join('\n');
             }
         }
 
-        output.textContent = command;
+        document.getElementById('final-output').innerText = header + body + footer;
     }
 
-    function copyText() {
-        const text = document.getElementById('output').textContent;
+    function copyScript() {
+        const text = document.getElementById('final-output').innerText;
         navigator.clipboard.writeText(text).then(() => {
-            const btn = document.querySelector('.copy-btn');
-            btn.textContent = "Copied!";
-            btn.style.background = "#28a745"; 
-            setTimeout(() => {
-                btn.textContent = "Copy Command";
-                btn.style.background = ""; 
-            }, 2000);
+            alert("Script copied to clipboard!");
+        }).catch(() => {
+            alert("Copy failed. Please select text manually.");
         });
     }
 
-    // Initialize
-    generate();
+    // Init
+    toggleBuilderFields();
 </script>
 
 </body>
