@@ -3,7 +3,7 @@
 ## 🔑 Key Points from the README
 - **Project Name:** UFW Firewall Generator  
 - **Purpose:** Automates the creation of UFW firewall rules for Ubuntu servers.  
-- **Website:** sohag1192.github.io/UFW-Firewall-Generator [(sohag1192.github.io)](https%3A%2F%2Fsohag1192.github.io%2FUFW-Firewall-Generator%2F)  
+- **Website:** sohag1192.github.io/UFW-Firewall-Generator [(https://sohag1192.github.io/UFW-Firewall-Generator/)]  
 - **Topics:**  
   - `ubuntu`  
   - `ubuntu-server`  
