@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UFW Master Script Builder</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-body: #0d1117; /* GitHub Dark Dimmed */
+            --bg-card: #161b22;
+            --border: #30363d;
+            --accent: #238636; /* GitHub Green */
+            --accent-hover: #2ea043;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --input-bg: #0d1117;
+            --danger: #da3633;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* CARD STYLES */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        /* HEADER */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.5px;
+        }
+        .badge {
+            background: #1f6feb;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        /* FORM GRID */
+        .grid-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .full-width { grid-column: span 2; }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #58a6ff;
+        }
+
+        /* BUTTONS */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid rgba(240, 246, 252, 0.1);
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            border: none;
+            flex: 2;
+        }
+        .btn-primary:hover { background: var(--accent-hover); }
+
+        .btn-secondary {
+            background: #21262d;
+            color: var(--text-main);
+            flex: 1;
+        }
+        .btn-secondary:hover { background: #30363d; }
+
+        .btn-danger {
+            background: transparent;
+            color: var(--danger);
+            border: 1px solid var(--border);
+            padding: 4px 8px;
+            font-size: 0.8rem;
+        }
+        .btn-danger:hover { background: rgba(218, 54, 51, 0.1); }
+
+        /* RULE LIST (STAGING AREA) */
+        .rule-list {
+            margin-top: 20px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .rule-item {
+            background: var(--input-bg);
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+        .rule-item:last-child { border-bottom: none; }
+        .rule-desc { color: var(--text-main); }
+        .rule-comment { color: #8b949e; margin-left: 10px; font-style: italic; }
+
+        /* OUTPUT AREA */
+        .output-area {
+            position: relative;
+        }
+        textarea {
+            width: 100%;
+            height: 250px;
+            background: #0d1117;
+            color: #79c0ff; /* Code Blue */
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            resize: vertical;
+            box-sizing: border-box;
+            white-space: pre;
+        }
+
+        /* FOOTER */
+        .footer {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .footer a { color: #58a6ff; text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
+
+        .counter-pill {
+            background: rgba(255,255,255,0.05);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <div class="card">
+        <div class="header">
+            <h1>UFW Script Master</h1>
+            <span class="badge">v4.0</span>
+        </div>
+
+        <div class="grid-form">
+            <div>
+                <label>Action</label>
+                <select id="action">
+                    <option value="allow">Allow (Open)</option>
+                    <option value="deny">Deny (Block)</option>
+                    <option value="limit">Limit (Protect SSH)</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Protocol</label>
+                <select id="protocol">
+                    <option value="">TCP & UDP</option>
+                    <option value="/tcp">TCP Only</option>
+                    <option value="/udp">UDP Only</option>
+                </select>
+            </div>
+
+            <div class="full-width">
+                <label>Target (Port, Service Name, or IP)</label>
+                <input type="text" id="target" placeholder="e.g. 22, 80, 443, ssh, or 192.168.1.5">
+            </div>
+
+            <div class="full-width">
+                <label>Comment (Optional - Helps you remember)</label>
+                <input type="text" id="comment" placeholder="e.g. Web Server, Home Office IP">
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-primary" onclick="addRule()">+ Add Rule to Script</button>
+            <button class="btn-secondary" onclick="copySingle()">Copy Single Command</button>
+        </div>
+
+        <div id="ruleListContainer" style="display:none;">
+            <h4 style="margin: 20px 0 10px 0; color:var(--text-muted); font-size:0.9rem;">Script Staging Area</h4>
+            <div class="rule-list" id="ruleList">
+                </div>
+        </div>
+    </div>
+
+    <div class="card output-area">
+        <div class="header">
+            <h2 style="font-size:1.1rem; margin:0;">Generated Bash Script</h2>
+            <button class="btn-secondary" style="font-size:0.8rem; padding: 5px 10px;" onclick="copyScript()">Copy Script</button>
+        </div>
+        <textarea id="finalOutput" readonly>#!/bin/bash
+# UFW Firewall Setup Script
+# Generated by UFW Master
+
+# 1. Reset UFW to default state
+sudo ufw --force reset
+
+# 2. Set Default Policies (Secure)
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
+# --- USER RULES BELOW ---
+
+# (Add rules above to populate this area)
+
+# ------------------------
+
+# 3. Enable Firewall
+sudo ufw --force enable
+sudo ufw status verbose
+</textarea>
+    </div>
+
+    <div class="footer">
+        <div class="counter-pill">
+            <span>Visitor Count:</span>
+            <strong style="color:white;">(Local)</strong>
+        </div>
+        <div>
+            Developed by <a href="https://github.com/Sohag1192" target="_blank">Sohag1192</a>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let rules = [];
+
+    function addRule() {
+        const action = document.getElementById('action').value;
+        const target = document.getElementById('target').value.trim();
+        const protocol = document.getElementById('protocol').value;
+        const comment = document.getElementById('comment').value.trim();
+
+        if (!target) {
+            alert("Please enter a Port or IP address.");
+            return;
+        }
+
+        // Construct the single command logic
+        let ruleCmd = "";
+        
+        // Detect if target is IP (contains dot) or Port
+        if (target.includes('.') || target.includes(':')) {
+             // It's likely an IP
+             ruleCmd = `ufw ${action} from ${target}`;
+        } else {
+             // It's a port
+             ruleCmd = `ufw ${action} ${target}${protocol}`;
+        }
+
+        // Add Comment if exists
+        if (comment) {
+            ruleCmd += ` comment '${comment}'`;
+        }
+
+        // Add to array
+        rules.push({ cmd: ruleCmd, desc: `${action.toUpperCase()} ${target}`, note: comment });
+        
+        updateUI();
+    }
+
+    function removeRule(index) {
+        rules.splice(index, 1);
+        updateUI();
+    }
+
+    function updateUI() {
+        // 1. Update List
+        const listContainer = document.getElementById('ruleListContainer');
+        const list = document.getElementById('ruleList');
+        
+        if (rules.length > 0) {
+            listContainer.style.display = 'block';
+            list.innerHTML = "";
+            
+            rules.forEach((rule, index) => {
+                list.innerHTML += `
+                    <div class="rule-item">
+                        <div>
+                            <span class="rule-desc">sudo ${rule.cmd}</span>
+                        </div>
+                        <button class="btn-danger" onclick="removeRule(${index})">X</button>
+                    </div>
+                `;
+            });
+        } else {
+            listContainer.style.display = 'none';
+        }
+
+        // 2. Update Script Output
+        generateScript();
+    }
+
+    function generateScript() {
+        const baseStart = `#!/bin/bash\n# UFW Firewall Setup Script\n# Generated by UFW Master\n\n# 1. Reset UFW to default state (Optional but recommended)\nsudo ufw --force reset\n\n# 2. Set Default Policies (Secure)\nsudo ufw default deny incoming\nsudo ufw default allow outgoing\n\n# --- USER RULES --- \n`;
+        
+        const baseEnd = `\n# ------------------\n\n# 3. Enable Firewall\nsudo ufw --force enable\nsudo ufw status verbose`;
+
+        let ruleString = "";
+        rules.forEach(rule => {
+            ruleString += `sudo ${rule.cmd}\n`;
+        });
+
+        if (rules.length === 0) {
+            ruleString = "# (Add rules above to populate this area)\n";
+        }
+
+        document.getElementById('finalOutput').value = baseStart + ruleString + baseEnd;
+    }
+
+    function copySingle() {
+        const action = document.getElementById('action').value;
+        const target = document.getElementById('target').value.trim();
+        const protocol = document.getElementById('protocol').value;
+        
+        if(!target) { alert("Enter a target first"); return; }
+        
+        let cmd = `sudo ufw ${action} ${target}${protocol}`;
+        
+        navigator.clipboard.writeText(cmd).then(() => {
+            alert("Command Copied: " + cmd);
+        });
+    }
+
+    function copyScript() {
+        const scriptContent = document.getElementById('finalOutput').value;
+        navigator.clipboard.writeText(scriptContent).then(() => {
+            const btn = document.querySelector('.output-area .btn-secondary');
+            const originalText = btn.innerText;
+            btn.innerText = "Copied!";
+            btn.style.background = "#238636";
+            btn.style.color = "white";
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.background = "";
+                btn.style.color = "";
+            }, 2000);
+        });
+    }
+</script>
+
+</body>
+</html>
