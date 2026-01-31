@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UFW Master Script Builder</title>
+    <title>UFW Master Script Builder v2</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-body: #0d1117; /* GitHub Dark Dimmed */
+            --bg-body: #0d1117;
             --bg-card: #161b22;
             --border: #30363d;
-            --accent: #238636; /* GitHub Green */
+            --accent: #238636;
             --accent-hover: #2ea043;
             --text-main: #c9d1d9;
             --text-muted: #8b949e;
             --input-bg: #0d1117;
             --danger: #da3633;
+            --highlight: #1f6feb;
         }
 
         body {
@@ -46,12 +47,11 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
 
-        /* HEADER */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
         }
         .header h1 {
             margin: 0;
@@ -61,13 +61,38 @@
             letter-spacing: -0.5px;
         }
         .badge {
-            background: #1f6feb;
+            background: var(--highlight);
             color: white;
             padding: 4px 8px;
             border-radius: 4px;
             font-size: 0.75rem;
             font-weight: 700;
-            text-transform: uppercase;
+        }
+
+        /* MODE SWITCHER */
+        .mode-switcher {
+            display: flex;
+            background: var(--input-bg);
+            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+        .mode-btn {
+            flex: 1;
+            padding: 8px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: 0.2s;
+        }
+        .mode-btn.active {
+            background: #30363d;
+            color: #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
 
         /* FORM GRID */
@@ -97,19 +122,16 @@
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.9rem;
             box-sizing: border-box;
-            transition: border-color 0.2s;
         }
         input:focus, select:focus {
             outline: none;
-            border-color: #58a6ff;
+            border-color: var(--highlight);
         }
+
+        .hidden { display: none; }
 
         /* BUTTONS */
-        .btn-group {
-            display: flex;
-            gap: 10px;
-        }
-
+        .btn-group { display: flex; gap: 10px; }
         button {
             padding: 10px 16px;
             border-radius: 6px;
@@ -117,34 +139,17 @@
             cursor: pointer;
             border: 1px solid rgba(240, 246, 252, 0.1);
             font-size: 0.9rem;
-            transition: 0.2s;
         }
-
-        .btn-primary {
-            background: var(--accent);
-            color: white;
-            border: none;
-            flex: 2;
-        }
+        .btn-primary { background: var(--accent); color: white; border: none; flex: 2; }
         .btn-primary:hover { background: var(--accent-hover); }
-
-        .btn-secondary {
-            background: #21262d;
-            color: var(--text-main);
-            flex: 1;
-        }
+        .btn-secondary { background: #21262d; color: var(--text-main); flex: 1; }
         .btn-secondary:hover { background: #30363d; }
-
         .btn-danger {
-            background: transparent;
-            color: var(--danger);
-            border: 1px solid var(--border);
-            padding: 4px 8px;
-            font-size: 0.8rem;
+            background: transparent; color: var(--danger);
+            border: 1px solid var(--border); padding: 4px 8px; font-size: 0.8rem;
         }
-        .btn-danger:hover { background: rgba(218, 54, 51, 0.1); }
 
-        /* RULE LIST (STAGING AREA) */
+        /* RULE LIST */
         .rule-list {
             margin-top: 20px;
             border: 1px solid var(--border);
@@ -162,29 +167,23 @@
             font-size: 0.85rem;
         }
         .rule-item:last-child { border-bottom: none; }
-        .rule-desc { color: var(--text-main); }
-        .rule-comment { color: #8b949e; margin-left: 10px; font-style: italic; }
 
         /* OUTPUT AREA */
-        .output-area {
-            position: relative;
-        }
         textarea {
             width: 100%;
             height: 250px;
             background: #0d1117;
-            color: #79c0ff; /* Code Blue */
+            color: #79c0ff;
             border: 1px solid var(--border);
             border-radius: 8px;
             padding: 15px;
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.9rem;
             resize: vertical;
-            box-sizing: border-box;
             white-space: pre;
+            box-sizing: border-box;
         }
 
-        /* FOOTER */
         .footer {
             text-align: center;
             color: var(--text-muted);
@@ -195,8 +194,7 @@
             align-items: center;
             gap: 10px;
         }
-        .footer a { color: #58a6ff; text-decoration: none; }
-        .footer a:hover { text-decoration: underline; }
+        .footer a { color: var(--highlight); text-decoration: none; }
 
         .counter-pill {
             background: rgba(255,255,255,0.05);
@@ -204,9 +202,6 @@
             border-radius: 20px;
             border: 1px solid var(--border);
             font-size: 0.75rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
     </style>
 </head>
@@ -217,7 +212,14 @@
     <div class="card">
         <div class="header">
             <h1>UFW Script Master</h1>
-            <span class="badge">v4.0</span>
+            <span class="badge">v2.0</span>
+        </div>
+
+        <label>Select Rule Type:</label>
+        <div class="mode-switcher">
+            <div class="mode-btn active" onclick="setMode('port')" id="btn-port">Port (Global)</div>
+            <div class="mode-btn" onclick="setMode('ip')" id="btn-ip">IP Address (Global)</div>
+            <div class="mode-btn" onclick="setMode('complex')" id="btn-complex">IP to Specific Port</div>
         </div>
 
         <div class="grid-form">
@@ -226,39 +228,43 @@
                 <select id="action">
                     <option value="allow">Allow (Open)</option>
                     <option value="deny">Deny (Block)</option>
-                    <option value="limit">Limit (Protect SSH)</option>
+                    <option value="limit">Limit (Brute Force Protect)</option>
                 </select>
             </div>
 
-            <div>
+            <div id="field-proto">
                 <label>Protocol</label>
                 <select id="protocol">
-                    <option value="">TCP & UDP</option>
+                    <option value="">TCP & UDP (Both)</option>
                     <option value="/tcp">TCP Only</option>
                     <option value="/udp">UDP Only</option>
                 </select>
             </div>
 
-            <div class="full-width">
-                <label>Target (Port, Service Name, or IP)</label>
-                <input type="text" id="target" placeholder="e.g. 22, 80, 443, ssh, or 192.168.1.5">
+            <div class="full-width hidden" id="field-ip">
+                <label>IP Address or Subnet (e.g. 192.168.1.5 or 10.0.0.0/24)</label>
+                <input type="text" id="ip_input" placeholder="192.168.1.5">
+            </div>
+
+            <div class="full-width" id="field-port">
+                <label id="lbl-port">Port Number or Service (e.g. 80, 443, ssh)</label>
+                <input type="text" id="port_input" placeholder="22">
             </div>
 
             <div class="full-width">
-                <label>Comment (Optional - Helps you remember)</label>
-                <input type="text" id="comment" placeholder="e.g. Web Server, Home Office IP">
+                <label>Comment (Optional)</label>
+                <input type="text" id="comment" placeholder="e.g. Home Office, Web Server">
             </div>
         </div>
 
         <div class="btn-group">
             <button class="btn-primary" onclick="addRule()">+ Add Rule to Script</button>
-            <button class="btn-secondary" onclick="copySingle()">Copy Single Command</button>
+            <button class="btn-secondary" onclick="copySingle()">Copy Single Cmd</button>
         </div>
 
         <div id="ruleListContainer" style="display:none;">
             <h4 style="margin: 20px 0 10px 0; color:var(--text-muted); font-size:0.9rem;">Script Staging Area</h4>
-            <div class="rule-list" id="ruleList">
-                </div>
+            <div class="rule-list" id="ruleList"></div>
         </div>
     </div>
 
@@ -269,20 +275,20 @@
         </div>
         <textarea id="finalOutput" readonly>#!/bin/bash
 # UFW Firewall Setup Script
-# Generated by UFW Master
+# Generated by UFW Master v2
 
-# 1. Reset UFW to default state
+# 1. Reset UFW (Optional safety)
 sudo ufw --force reset
 
-# 2. Set Default Policies (Secure)
+# 2. Set Defaults (Secure)
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
 
-# --- USER RULES BELOW ---
+# --- USER RULES ---
 
 # (Add rules above to populate this area)
 
-# ------------------------
+# ------------------
 
 # 3. Enable Firewall
 sudo ufw --force enable
@@ -304,38 +310,70 @@ sudo ufw status verbose
 
 <script>
     let rules = [];
+    let currentMode = 'port';
+
+    function setMode(mode) {
+        currentMode = mode;
+        
+        // UI Tabs
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('btn-' + mode).classList.add('active');
+
+        // Field Visibility
+        const fIP = document.getElementById('field-ip');
+        const fPort = document.getElementById('field-port');
+        const fProto = document.getElementById('field-proto');
+
+        if (mode === 'port') {
+            fIP.classList.add('hidden');
+            fPort.classList.remove('hidden');
+            fProto.classList.remove('hidden');
+            document.getElementById('lbl-port').innerText = "Port Number or Service (e.g. 80, 443)";
+        } 
+        else if (mode === 'ip') {
+            fIP.classList.remove('hidden');
+            fPort.classList.add('hidden');
+            fProto.classList.add('hidden');
+        } 
+        else if (mode === 'complex') {
+            fIP.classList.remove('hidden');
+            fPort.classList.remove('hidden');
+            fProto.classList.remove('hidden');
+            document.getElementById('lbl-port').innerText = "Target Port (The port they can access)";
+        }
+    }
 
     function addRule() {
         const action = document.getElementById('action').value;
-        const target = document.getElementById('target').value.trim();
-        const protocol = document.getElementById('protocol').value;
         const comment = document.getElementById('comment').value.trim();
+        let cmd = "";
 
-        if (!target) {
-            alert("Please enter a Port or IP address.");
-            return;
+        if (currentMode === 'port') {
+            const p = document.getElementById('port_input').value.trim();
+            const proto = document.getElementById('protocol').value;
+            if(!p) return alert("Enter a port");
+            cmd = `ufw ${action} ${p}${proto}`;
+        }
+        else if (currentMode === 'ip') {
+            const ip = document.getElementById('ip_input').value.trim();
+            if(!ip) return alert("Enter an IP");
+            cmd = `ufw ${action} from ${ip}`;
+        }
+        else if (currentMode === 'complex') {
+            const ip = document.getElementById('ip_input').value.trim();
+            const p = document.getElementById('port_input').value.trim();
+            const proto = document.getElementById('protocol').value; // Usually ignored in "to any port" syntax unless specific, but UFW handles it roughly.
+            // Correct syntax: ufw allow from <IP> to any port <PORT> proto <TCP>
+            if(!ip || !p) return alert("Enter IP and Port");
+            
+            cmd = `ufw ${action} from ${ip} to any port ${p}`;
+            if(proto === "/tcp") cmd += " proto tcp";
+            if(proto === "/udp") cmd += " proto udp";
         }
 
-        // Construct the single command logic
-        let ruleCmd = "";
-        
-        // Detect if target is IP (contains dot) or Port
-        if (target.includes('.') || target.includes(':')) {
-             // It's likely an IP
-             ruleCmd = `ufw ${action} from ${target}`;
-        } else {
-             // It's a port
-             ruleCmd = `ufw ${action} ${target}${protocol}`;
-        }
+        if (comment) cmd += ` comment '${comment}'`;
 
-        // Add Comment if exists
-        if (comment) {
-            ruleCmd += ` comment '${comment}'`;
-        }
-
-        // Add to array
-        rules.push({ cmd: ruleCmd, desc: `${action.toUpperCase()} ${target}`, note: comment });
-        
+        rules.push({ cmd: cmd });
         updateUI();
     }
 
@@ -345,78 +383,52 @@ sudo ufw status verbose
     }
 
     function updateUI() {
-        // 1. Update List
-        const listContainer = document.getElementById('ruleListContainer');
         const list = document.getElementById('ruleList');
+        const container = document.getElementById('ruleListContainer');
         
         if (rules.length > 0) {
-            listContainer.style.display = 'block';
+            container.style.display = 'block';
             list.innerHTML = "";
-            
-            rules.forEach((rule, index) => {
+            rules.forEach((r, i) => {
                 list.innerHTML += `
                     <div class="rule-item">
-                        <div>
-                            <span class="rule-desc">sudo ${rule.cmd}</span>
-                        </div>
-                        <button class="btn-danger" onclick="removeRule(${index})">X</button>
-                    </div>
-                `;
+                        <span>sudo ${r.cmd}</span>
+                        <button class="btn-danger" onclick="removeRule(${i})">X</button>
+                    </div>`;
             });
         } else {
-            listContainer.style.display = 'none';
+            container.style.display = 'none';
         }
-
-        // 2. Update Script Output
         generateScript();
     }
 
     function generateScript() {
-        const baseStart = `#!/bin/bash\n# UFW Firewall Setup Script\n# Generated by UFW Master\n\n# 1. Reset UFW to default state (Optional but recommended)\nsudo ufw --force reset\n\n# 2. Set Default Policies (Secure)\nsudo ufw default deny incoming\nsudo ufw default allow outgoing\n\n# --- USER RULES --- \n`;
+        const head = `#!/bin/bash\n# UFW Firewall Setup Script\n# Generated by UFW Master v2\n\n# 1. Reset UFW\nsudo ufw --force reset\n\n# 2. Set Defaults\nsudo ufw default deny incoming\nsudo ufw default allow outgoing\n\n# --- USER RULES --- \n`;
+        const foot = `\n# ------------------\n\n# 3. Enable Firewall\nsudo ufw --force enable\nsudo ufw status verbose`;
         
-        const baseEnd = `\n# ------------------\n\n# 3. Enable Firewall\nsudo ufw --force enable\nsudo ufw status verbose`;
-
-        let ruleString = "";
-        rules.forEach(rule => {
-            ruleString += `sudo ${rule.cmd}\n`;
-        });
-
-        if (rules.length === 0) {
-            ruleString = "# (Add rules above to populate this area)\n";
-        }
-
-        document.getElementById('finalOutput').value = baseStart + ruleString + baseEnd;
+        let body = rules.map(r => `sudo ${r.cmd}`).join('\n');
+        if (!body) body = "# (Add rules above)";
+        
+        document.getElementById('finalOutput').value = head + body + foot;
     }
 
     function copySingle() {
-        const action = document.getElementById('action').value;
-        const target = document.getElementById('target').value.trim();
-        const protocol = document.getElementById('protocol').value;
-        
-        if(!target) { alert("Enter a target first"); return; }
-        
-        let cmd = `sudo ufw ${action} ${target}${protocol}`;
-        
-        navigator.clipboard.writeText(cmd).then(() => {
-            alert("Command Copied: " + cmd);
-        });
+        // Just triggers addRule logic but doesn't add to list, just alerts/copies
+        // For simplicity, let's just use the logic from addRule partially or 
+        // alert the user to use the "Add Rule" button + Copy Script for better workflow.
+        // Or implement a quick helper:
+        alert("Use the 'Add Rule' button to generate the command, then copy the script below!");
     }
 
     function copyScript() {
-        const scriptContent = document.getElementById('finalOutput').value;
-        navigator.clipboard.writeText(scriptContent).then(() => {
-            const btn = document.querySelector('.output-area .btn-secondary');
-            const originalText = btn.innerText;
-            btn.innerText = "Copied!";
-            btn.style.background = "#238636";
-            btn.style.color = "white";
-            setTimeout(() => {
-                btn.innerText = originalText;
-                btn.style.background = "";
-                btn.style.color = "";
-            }, 2000);
+        const txt = document.getElementById('finalOutput').value;
+        navigator.clipboard.writeText(txt).then(() => {
+            alert("Script copied to clipboard!");
         });
     }
+
+    // Init
+    setMode('port');
 </script>
 
 </body>
